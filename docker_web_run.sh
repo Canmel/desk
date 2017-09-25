@@ -56,12 +56,6 @@ elif [ "$RUN_CONTEXT" = "prod" ]; then
     if [ $ROOT_PASSWD ]; then
         echo "root:$ROOT_PASSWD" | chpasswd
     fi
-    #启动sshd
-    /usr/sbin/sshd
-    #启动rsyslog
-    /etc/init.d/rsyslog start
-    #执行db:migrate
-    RAILS_ENV=production bundle exec rake db:migrate
 
     echo `bundle exec rails s -b 0.0.0.0 -p 3000`
 else
