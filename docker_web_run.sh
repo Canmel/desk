@@ -20,13 +20,15 @@ if [ "$RUN_CONTEXT" = "dev" ]; then
     /etc/init.d/cron start
     #执行rake任务
     bundle exec rake db:migrate
+    #开启rails定时任务
+    #whenever -w
     #启动rails
     #echo `bundle exec rails s -b 0.0.0.0 -p 3000`
     #passenger start --environment development --port 3000
 
-#生产环境
-elif [ "$RUN_CONTEXT" = "prod" ]; then
-     echo "root:POloXM1980!@&" | chpasswd
+#预发布环境
+elif [ "$RUN_CONTEXT" = "pre_prod" ]; then
+    echo "root:POloXM1980!@&" | chpasswd
     #设置ssh密码,密码为环境变量ROOT_PASSWD的值,如果环境变量ROOT_PASSWD没有设,则指定一个默认密码
     if [ $ROOT_PASSWD ]; then
         echo "root:$ROOT_PASSWD" | chpasswd
@@ -38,14 +40,42 @@ elif [ "$RUN_CONTEXT" = "prod" ]; then
     #启动cron
     /etc/init.d/cron start
     #执行db:migrate
-    RAILS_ENV=production bundle exec rake db:migrate
+    RAILS_ENV=pre_production bundle exec rake db:migrate
+    #开启rails定时任务
+    whenever -i --set environment=pre_production
+
+    nohup /bin/bash -c "bundle exec sidekiq -e pre_production -C config/sidekiq.yml" &
+
     #启动rails
-    passenger start
+    passenger start --environment pre_production --port 80
+
+#生产环境
+elif [ "$RUN_CONTEXT" = "prod" ]; then
+    echo "root:POloXM1980!@&" | chpasswd
+    #设置ssh密码,密码为环境变量ROOT_PASSWD的值,如果环境变量ROOT_PASSWD没有设,则指定一个默认密码
+    if [ $ROOT_PASSWD ]; then
+        echo "root:$ROOT_PASSWD" | chpasswd
+    fi
+    #启动sshd
+    /usr/sbin/sshd
+    #启动rsyslog
+    /etc/init.d/rsyslog start
+    #启动cron
+    /etc/init.d/cron start
+
+    #设置发送邮件的crontab定时任务
+    CRONFILE=/tmp/sendmail.cron
+    echo "0 8 * * * /rails_app/send_mail.sh" > $CRONFILE
+    crontab $CRONFILE
+
+    #执行db:migrate
+    RAILS_ENV=production bundle exec rake db:migrate
+    #开启rails定时任务
+    whenever -i --set environment=production
+
+    echo `service redis-server start`
+
+    echo `bundle exec rails s -b 0.0.0.0 -p 3000`
 else
     echo "unknown RUN_CONTEXT:${RUN_CONTEXT}"
 fi
-
-
-
-
-
