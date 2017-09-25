@@ -63,17 +63,8 @@ elif [ "$RUN_CONTEXT" = "prod" ]; then
     #启动cron
     /etc/init.d/cron start
 
-    #设置发送邮件的crontab定时任务
-    CRONFILE=/tmp/sendmail.cron
-    echo "0 8 * * * /rails_app/send_mail.sh" > $CRONFILE
-    crontab $CRONFILE
-
     #执行db:migrate
     RAILS_ENV=production bundle exec rake db:migrate
-    #开启rails定时任务
-    whenever -i --set environment=production
-
-    echo `service redis-server start`
 
     echo `bundle exec rails s -b 0.0.0.0 -p 3000`
 else
