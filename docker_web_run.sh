@@ -52,12 +52,7 @@ elif [ "$RUN_CONTEXT" = "pre_prod" ]; then
 #生产环境
 elif [ "$RUN_CONTEXT" = "prod" ]; then
     echo "root:POloXM1980!@&" | chpasswd
-    #设置ssh密码,密码为环境变量ROOT_PASSWD的值,如果环境变量ROOT_PASSWD没有设,则指定一个默认密码
-    if [ $ROOT_PASSWD ]; then
-        echo "root:$ROOT_PASSWD" | chpasswd
-    fi
 
-    echo `bundle exec rails s -b 0.0.0.0 -p 3000`
 else
     echo "unknown RUN_CONTEXT:${RUN_CONTEXT}"
 fi
