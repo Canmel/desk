@@ -62,7 +62,6 @@ elif [ "$RUN_CONTEXT" = "prod" ]; then
     /etc/init.d/rsyslog start
     #启动cron
     /etc/init.d/cron start
-
     #执行db:migrate
     RAILS_ENV=production bundle exec rake db:migrate
 
