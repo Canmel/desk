@@ -65,7 +65,7 @@ elif [ "$RUN_CONTEXT" = "prod" ]; then
     #执行db:migrate
     RAILS_ENV=production bundle exec rake db:migrate
     #启动rails
-    passenger start
+    echo `bundle exec rails s -b 0.0.0.0 -p 3001`
 else
     echo "unknown RUN_CONTEXT:${RUN_CONTEXT}"
 fi
